@@ -33,6 +33,7 @@
 
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
+<a class="assistive-text" href="#content"><?php _e( 'Skip to content', 'twentytwelve' ); ?></a>
 <div id="page" class="hfeed site">
 	<header id="masthead" class="site-header">
 		<hgroup>
@@ -42,7 +43,6 @@
 
 		<nav id="site-navigation" class="main-navigation">
 			<button class="menu-toggle"><?php _e( 'Menu', 'twentytwelve' ); ?></button>
-			<a class="assistive-text" href="#content"><?php _e( 'Skip to content', 'twentytwelve' ); ?></a>
 			<?php
 			wp_nav_menu(
 				array(
