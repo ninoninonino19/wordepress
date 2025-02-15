@@ -350,8 +350,9 @@ a:hover {
 
 a.skip-link:focus {
 	background-color: #ddd;
+	border: 2px solid #06c;
 	clip-path: none;
-	color: #0066cc;
+	color: #333;
 	display: block;
 	font-size: 16px;
 	height: auto;
