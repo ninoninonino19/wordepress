@@ -61,7 +61,7 @@ class Test_WP_Debug_Mode extends WP_UnitTestCase {
 	 * @dataProvider data_is_valid_error_level
 	 */
 	public function test_is_valid_error_level( $level, $expected ) {
-		$this->assertSame( $expected, is_valid_error_level( $level ) );
+		$this->assertSame( $expected, wp_is_valid_error_level( $level ) );
 	}
 
 	/**
@@ -96,7 +96,13 @@ class Test_WP_Debug_Mode extends WP_UnitTestCase {
 				E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED,
 				true,
 			),
-//			'Invalid level (random number) is not valid'   => array( 12345, false ),
+			'E_ALL & ~E_NOTICE & ( ~E_STRICT or ~E_DEPRECATED ) is valid' => array(
+				E_ALL & ~E_NOTICE & ( ~E_STRICT or ~E_DEPRECATED ),
+				true,
+			),
+			'Error level as number is valid'               => array( 32767, true ),
+			'Error level 10 is valid'                      => array( 10, true ),
+			'Invalid level (random number) is not valid'   => array( 123456789, false ),
 			'Invalid level (negative number) is not valid' => array( - 1, false ),
 			'Invalid level (float) is not valid'           => array( 1.5, false ),
 			'Invalid level (string) is not valid'          => array( 'E_ALL', false ),

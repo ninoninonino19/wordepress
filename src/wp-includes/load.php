@@ -611,7 +611,7 @@ function wp_debug_mode() {
 
 			$wp_debug_level = WP_DEBUG_LEVEL;
 			// In the main function:
-			if ( ! is_valid_error_level( $wp_debug_level ) ) {
+			if ( ! wp_is_valid_error_level( $wp_debug_level ) ) {
 				$wp_debug_level = E_ALL;
 			}
 
@@ -653,78 +653,56 @@ function wp_debug_mode() {
 }
 
 /**
- * Filters the WordPress error reporting level.
- *
- * This filter is run before WordPress sets the error reporting
- * level. It is designed for non-web runtimes. Returning a
- * non-null value will override the default error reporting
- * level.         * Get valid error reporting constants.
+ * Returns all valid error reporting constants.
  *
  * @return array Array of valid error reporting constants.
  *
  * @since 6.8.0
  */
-function get_valid_error_constants() {
-	return array(
-		E_ERROR,
-		E_WARNING,
-		E_PARSE,
-		E_NOTICE,
-		E_CORE_ERROR,
-		E_CORE_WARNING,
-		E_COMPILE_ERROR,
-		E_COMPILE_WARNING,
-		E_USER_ERROR,
-		E_USER_WARNING,
-		E_USER_NOTICE,
-		E_STRICT,
-		E_RECOVERABLE_ERROR,
-		E_DEPRECATED,
-		E_USER_DEPRECATED,
-		E_ALL,
-	);
+function wp_get_valid_error_constants() {
+	$valid_constants = array();
+
+	foreach ( get_defined_constants( true )['Core'] as $name => $value ) {
+		if ( 0 === strpos( $name, 'E_' ) && is_int( $value ) ) {
+			$valid_constants[] = $value;
+		}
+	}
+
+	return $valid_constants;
 }
 
 /**
  * Check if the given error level is valid.
  *
  * @since 6.8.0
- 
+
  * @param int $level Error reporting level to check.
  *
  * @return bool True if valid, false otherwise.
  */
-function is_valid_error_level( $level ) {
+function wp_is_valid_error_level( $level ) {
 
 	if ( is_string( $level ) ) {
+
 		return false;
 	}
 	// Check if the level is a valid integer and not negative
 	if ( ! is_int( $level ) || $level < 0 ) {
+
 		return false;
 	}
 
-	$valid_constants = get_valid_error_constants();
-
-	// Check if the level is exactly one of the valid constants
-	if ( in_array( $level, $valid_constants, true ) ) {
-
-		return true;
-	}
-
-	// Remove the parentheses and comma separatorsD
-	$level = str_replace( array( ',', '(', ')' ), '', $level );
-
+	$valid_constants = wp_get_valid_error_constants();
 	// Check if the level is a valid combination of constants
-	$remaining = $level;
-	foreach ( $valid_constants as $constant ) {
-		if ( $remaining & $constant ) {
-			$remaining &= ~$constant;
-		}
-	}
+	$bitmask = array_reduce(
+		$valid_constants,
+		function ( $carry, $item ) {
+			return $carry | $item;
+		},
+		0
+	);
 
-	// If $remaining is 0, then $level was composed entirely of valid constants
-	return 0 === $remaining;
+	return ( $level & ~$bitmask ) === 0;
 }
 
 
