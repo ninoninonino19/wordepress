@@ -33,8 +33,8 @@
 
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
-<a class="assistive-text" href="#content"><?php _e( 'Skip to content', 'twentytwelve' ); ?></a>
 <div id="page" class="hfeed site">
+	<a class="screen-reader-text skip-link" href="#content"><?php _e( 'Skip to content', 'twentytwelve' ); ?></a>
 	<header id="masthead" class="site-header">
 		<hgroup>
 			<h1 class="site-title"><a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a></h1>
