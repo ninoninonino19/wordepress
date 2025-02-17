@@ -1103,7 +1103,7 @@
 
 			$('#add-custom-links input[type="text"]').on( 'keypress', function(e){
 				$('#customlinkdiv').removeClass('form-invalid');
-				$('#custom-menu-item-url').hide();
+				$('#custom-url-error').hide();
 
 				if ( e.keyCode === 13 ) {
 					e.preventDefault();
@@ -1127,7 +1127,7 @@
 						.attr('aria-invalid', 'true')
 						.attr('aria-describedby', 'custom-url-error');
 
-					var errorText = wp.i18n.__('No content entered. Please enter a valid link.');
+					var errorText = wp.i18n.__('Content is required for the link\'s href attribute.');
 					errorMessage.show();
 					urlWrap.addClass('has-error');
 
