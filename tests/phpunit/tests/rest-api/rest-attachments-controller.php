@@ -2558,7 +2558,7 @@ class WP_Test_REST_Attachments_Controller extends WP_Test_REST_Post_Type_Control
 
 	/**
 	 * Test that uploading unsupported image types throws a `rest_upload_image_type_not_supported` error.
-	 * 
+	 *
 	 * @ticket 61167
 	 */
 	public function test_upload_unsupported_image_type() {
@@ -2578,5 +2578,4 @@ class WP_Test_REST_Attachments_Controller extends WP_Test_REST_Post_Type_Control
 
 		$this->assertErrorResponse( 'rest_upload_image_type_not_supported', $response, 400 );
 	}
-		
 }
