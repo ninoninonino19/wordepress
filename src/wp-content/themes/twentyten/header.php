@@ -63,6 +63,7 @@ if ( is_singular() && get_option( 'thread_comments' ) ) {
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
 <div id="wrapper" class="hfeed">
+	<?php // Allow screen readers / text browsers to skip the navigation menu and get right to the good stuff. ?>
 	<a href="#content" class="screen-reader-text skip-link"><?php _e( 'Skip to content', 'twentyten' ); ?></a>
 	<div id="header">
 		<div id="masthead">
