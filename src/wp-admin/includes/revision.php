@@ -380,7 +380,7 @@ function wp_print_revision_templates() {
 
 	<script id="tmpl-revisions-slider-hidden-help" type="text/html">
 		<h2 class="screen-reader-text"><?php esc_html_e( 'Select a revision' ); ?></h2>
-		<p id="revisions-slider-hidden-help" hidden><?php esc_html_e( 'Change revision by using the left and arrow keys' ); ?></p>
+		<p id="revisions-slider-hidden-help" hidden><?php esc_html_e( 'Change revision by using the left and right arrow keys' ); ?></p>
 	</script>
 
 	<script id="tmpl-revisions-checkbox" type="text/html">
@@ -466,7 +466,7 @@ function wp_print_revision_templates() {
 
 	<script id="tmpl-revisions-diff" type="text/html">
 		<div class="loading-indicator"><span class="spinner"></span></div>
-		<div class="diff-error"><?php _e( 'Sorry, something went wrong. The requested comparison could not be loaded.' ); ?></div>
+		<div class="diff-error"><?php _e( 'An error occurred while loading the comparison. Please refresh the page and try again.' ); ?></div>
 		<div class="diff">
 		<# _.each( data.fields, function( field ) { #>
 			<h2>{{ field.name }}</h2>
