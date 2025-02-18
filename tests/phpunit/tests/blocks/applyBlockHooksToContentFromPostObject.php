@@ -28,6 +28,13 @@ class Tests_Blocks_ApplyBlockHooksToContentFromPostObject extends WP_UnitTestCas
 	protected static $post_with_ignored_hooked_block;
 
 	/**
+	 * Post object.
+	 *
+	 * @var WP_Post
+	 */
+	protected static $post_with_non_block_content;
+
+	/**
 	 *
 	 * Set up.
 	 *
@@ -52,6 +59,15 @@ class Tests_Blocks_ApplyBlockHooksToContentFromPostObject extends WP_UnitTestCas
 				'meta_input'   => array(
 					'_wp_ignored_hooked_blocks' => '["tests/hooked-block-first-child"]',
 				),
+			)
+		);
+
+		self::$post_with_non_block_content = self::factory()->post->create_and_get(
+			array(
+				'post_type'    => 'post',
+				'post_status'  => 'publish',
+				'post_title'   => 'Test Post',
+				'post_content' => '<h1>Hello World!</h1>',
 			)
 		);
 
@@ -112,5 +128,17 @@ class Tests_Blocks_ApplyBlockHooksToContentFromPostObject extends WP_UnitTestCas
 			'insert_hooked_blocks'
 		);
 		$this->assertSame( $expected, $actual );
+	}
+
+	/**
+	 * @ticket 62716
+	 */
+	public function test_apply_block_hooks_to_content_from_post_object_preserves_non_block_content() {
+		$actual = apply_block_hooks_to_content_from_post_object(
+			self::$post_with_non_block_content->post_content,
+			self::$post_with_non_block_content,
+			'insert_hooked_blocks'
+		);
+		$this->assertSame( self::$post_with_non_block_content->post_content, $actual );
 	}
 }
