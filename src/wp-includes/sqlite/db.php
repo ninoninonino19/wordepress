@@ -37,7 +37,6 @@ if ( ! defined( 'FQDB' ) ) {
 	}
 }
 
-
 if ( ! extension_loaded( 'pdo' ) ) {
 	wp_die(
 		new WP_Error(
