@@ -2489,13 +2489,9 @@ function build_query_vars_from_query_block( $block, $page ) {
 				 */
 				$query['post__in']            = ! empty( $sticky ) ? $sticky : array( 0 );
 				$query['ignore_sticky_posts'] = 1;
-			}
-
-			if ( 'exclude' === $block->context['query']['sticky'] ) {
+			} elseif ( 'exclude' === $block->context['query']['sticky'] ) {
 				$query['post__not_in'] = array_merge( $query['post__not_in'], $sticky );
-			}
-
-			if ( 'ignore' === $block->context['query']['sticky'] ) {
+			} elseif ( 'ignore' === $block->context['query']['sticky'] ) {
 				$query['ignore_sticky_posts'] = 1;
 			}
 		}
