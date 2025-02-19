@@ -2464,7 +2464,8 @@ function upgrade_xyz() {
 	$prefix = $wpdb->get_blog_prefix();
 
 	// Create a new table which combines fields from wp_terms and wp_term_taxonomy.
-	$wpdb->query( "CREATE TABLE {$prefix}new_terms AS SELECT
+	$wpdb->query(
+		"CREATE TABLE {$prefix}new_terms AS SELECT
 			terms.term_id,
 			terms.name,
 			terms.slug,
@@ -2475,8 +2476,8 @@ function upgrade_xyz() {
 			terms.term_group
 		FROM $wpdb->terms AS terms
 		JOIN $wpdb->term_taxonomy AS tt ON tt.term_id = terms.term_id
-		LEFT JOIN $wpdb->term_taxonomy AS tt_parent ON tt_parent.term_taxonomy_id = tt.parent
-	");
+		LEFT JOIN $wpdb->term_taxonomy AS tt_parent ON tt_parent.term_taxonomy_id = tt.parent"
+	);
 
 	// Atomically put the new table into place.
 	$wpdb->query( "RENAME TABLE $wpdb->terms TO {$prefix}old_terms, {$prefix}new_terms TO $wpdb->terms" );
@@ -2487,7 +2488,8 @@ function upgrade_xyz() {
 	$wpdb->query( "DROP TABLE $wpdb->term_taxonomy, {$prefix}old_terms" );
 
 	// Create a view for wp_term_taxonomy which selects from the new combined table.
-	$wpdb->query( "CREATE VIEW $wpdb->term_taxonomy
+	$wpdb->query(
+		"CREATE VIEW $wpdb->term_taxonomy
 		AS SELECT
 			term_id AS term_taxonomy_id,
 			term_id,
@@ -2495,8 +2497,8 @@ function upgrade_xyz() {
 			description,
 			parent,
 			count
-		FROM {$wpdb->terms}
-	");
+		FROM {$wpdb->terms}"
+	);
 
 	// Set the flag.
 	add_option( 'finished_merging_terms_table', '1', '', true );
