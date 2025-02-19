@@ -31,7 +31,9 @@ jQuery( function($) {
 			action: 'update-welcome-panel',
 			visible: visible,
 			welcomepanelnonce: $( '#welcomepanelnonce' ).val()
-		});
+		}).done( function() {
+			wp.a11y.speak( wp.i18n.__( 'Screen Options saved.' ) );
+		} );
 	};
 
 	// Unhide the welcome panel if the Welcome Option checkbox is checked.

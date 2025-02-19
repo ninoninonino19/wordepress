@@ -424,7 +424,9 @@ window.columns = {
 			hidden: hidden,
 			screenoptionnonce: $('#screenoptionnonce').val(),
 			page: pagenow
-		});
+		}).done( function() {
+			wp.a11y.speak( __( 'Screen Options saved.' ) );
+		} );
 	},
 
 	/**

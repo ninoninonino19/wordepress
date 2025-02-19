@@ -467,7 +467,9 @@
 				hidden: hidden,
 				closedpostboxesnonce: jQuery('#closedpostboxesnonce').val(),
 				page: page
-			});
+			}).done( function() {
+				wp.a11y.speak( __( 'Screen Options saved.' ) );
+			} );
 		},
 
 		/**
