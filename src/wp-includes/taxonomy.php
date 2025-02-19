@@ -2182,7 +2182,7 @@ function wp_delete_term( $term, $taxonomy, $args = array() ) {
 	do_action( 'deleted_term_taxonomy', $tt_id );
 
 	// Delete the term if no taxonomies use it.
-	if ( ! $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->term_taxonomy WHERE term_id = %d", $term ) ) ) {
+	if ( wp_has_separate_terms_tables() && ! $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->term_taxonomy WHERE term_id = %d", $term ) ) ) {
 		$wpdb->delete( $wpdb->terms, array( 'term_id' => $term ) );
 	}
 
@@ -2568,14 +2568,29 @@ function wp_insert_term( $term, $taxonomy, $args = array() ) {
 
 	$slug = wp_unique_term_slug( $slug, (object) $args );
 
-	$data = compact( 'name', 'slug', 'term_group' );
+	$count = 0;
+
+	$data = wp_has_separate_terms_tables()
+		? compact( 'name', 'slug', 'term_group' )
+		: compact( 'name', 'slug', 'term_group', 'taxonomy', 'description', 'parent', 'count' );
 
 	/**
 	 * Filters term data before it is inserted into the database.
 	 *
 	 * @since 4.7.0
+	 * @since x.y.z ...
 	 *
-	 * @param array  $data     Term data to be inserted.
+	 * @param array  $data     {
+	 *     Term data to be inserted.
+	 *
+	 *     @type string     $name        Term name.
+	 *     @type string     $slug        Term slug.
+	 *     @type string|int $term_group  Term group.
+	 *     @type string     $taxonomy    Taxonomy.
+	 *     @type string     $description Term description.
+	 *     @type int        $parent      Parent term ID.
+	 *     @type int        $count       Term count.
+	 * }
 	 * @param string $taxonomy Taxonomy slug.
 	 * @param array  $args     Arguments passed to wp_insert_term().
 	 */
@@ -2586,6 +2601,7 @@ function wp_insert_term( $term, $taxonomy, $args = array() ) {
 	}
 
 	$term_id = (int) $wpdb->insert_id;
+	$tt_id   = $term_id;
 
 	// Seems unreachable. However, is used in the case that a term name is provided, which sanitizes to an empty string.
 	if ( empty( $slug ) ) {
@@ -2599,6 +2615,7 @@ function wp_insert_term( $term, $taxonomy, $args = array() ) {
 		do_action( 'edited_terms', $term_id, $taxonomy );
 	}
 
+	if ( wp_has_separate_terms_tables() ) {
 	$tt_id = $wpdb->get_var( $wpdb->prepare( "SELECT tt.term_taxonomy_id FROM $wpdb->term_taxonomy AS tt INNER JOIN $wpdb->terms AS t ON tt.term_id = t.term_id WHERE tt.taxonomy = %s AND t.term_id = %d", $taxonomy, $term_id ) );
 
 	if ( ! empty( $tt_id ) ) {
@@ -2608,11 +2625,12 @@ function wp_insert_term( $term, $taxonomy, $args = array() ) {
 		);
 	}
 
-	if ( false === $wpdb->insert( $wpdb->term_taxonomy, compact( 'term_id', 'taxonomy', 'description', 'parent' ) + array( 'count' => 0 ) ) ) {
+	if ( false === $wpdb->insert( $wpdb->term_taxonomy, compact( 'term_id', 'taxonomy', 'description', 'parent', 'count' ) ) ) {
 		return new WP_Error( 'db_insert_error', __( 'Could not insert term taxonomy into the database.' ), $wpdb->last_error );
 	}
 
 	$tt_id = (int) $wpdb->insert_id;
+	}
 
 	/*
 	 * Confidence check: if we just created a term with the same parent + taxonomy + slug but a higher term_id than
@@ -2642,7 +2660,10 @@ function wp_insert_term( $term, $taxonomy, $args = array() ) {
 
 	if ( $duplicate_term ) {
 		$wpdb->delete( $wpdb->terms, array( 'term_id' => $term_id ) );
+
+		if ( wp_has_separate_terms_tables() ) {
 		$wpdb->delete( $wpdb->term_taxonomy, array( 'term_taxonomy_id' => $tt_id ) );
+		}
 
 		$term_id = (int) $duplicate_term->term_id;
 		$tt_id   = (int) $duplicate_term->term_taxonomy_id;
@@ -3325,6 +3346,7 @@ function wp_update_term( $term_id, $taxonomy, $args = array() ) {
 		}
 	}
 
+	// @TODO
 	$tt_id = (int) $wpdb->get_var( $wpdb->prepare( "SELECT tt.term_taxonomy_id FROM $wpdb->term_taxonomy AS tt INNER JOIN $wpdb->terms AS t ON tt.term_id = t.term_id WHERE tt.taxonomy = %s AND t.term_id = %d", $taxonomy, $term_id ) );
 
 	// Check whether this is a shared term that needs splitting.
@@ -3345,14 +3367,27 @@ function wp_update_term( $term_id, $taxonomy, $args = array() ) {
 	 */
 	do_action( 'edit_terms', $term_id, $taxonomy, $args );
 
-	$data = compact( 'name', 'slug', 'term_group' );
+	$data = wp_has_separate_terms_tables()
+		? compact( 'name', 'slug', 'term_group' )
+		: compact( 'name', 'slug', 'term_group', 'taxonomy', 'description', 'parent' );
 
 	/**
 	 * Filters term data before it is updated in the database.
 	 *
 	 * @since 4.7.0
+	 * @since x.y.z ...
 	 *
-	 * @param array  $data     Term data to be updated.
+	 * @param array  $data     {
+	 *     Term data to be updated.
+	 *
+	 *     @type string     $name        Term name.
+	 *     @type string     $slug        Term slug.
+	 *     @type string|int $term_group  Term group.
+	 *     @type string     $taxonomy    Taxonomy.
+	 *     @type string     $description Term description.
+	 *     @type int        $parent      Parent term ID.
+	 *     @type int        $count       Term count.
+	 * }
 	 * @param int    $term_id  Term ID.
 	 * @param string $taxonomy Taxonomy slug.
 	 * @param array  $args     Arguments passed to wp_update_term().
@@ -3384,6 +3419,7 @@ function wp_update_term( $term_id, $taxonomy, $args = array() ) {
 	 *
 	 * @since 2.9.0
 	 * @since 6.1.0 The `$args` parameter was added.
+	 * @since x.y.z This term-taxonomy relationship no longer exists as a separate database table.
 	 *
 	 * @param int    $tt_id    Term taxonomy ID.
 	 * @param string $taxonomy Taxonomy slug.
@@ -3391,13 +3427,16 @@ function wp_update_term( $term_id, $taxonomy, $args = array() ) {
 	 */
 	do_action( 'edit_term_taxonomy', $tt_id, $taxonomy, $args );
 
+	if ( wp_has_separate_terms_tables() ) {
 	$wpdb->update( $wpdb->term_taxonomy, compact( 'term_id', 'taxonomy', 'description', 'parent' ), array( 'term_taxonomy_id' => $tt_id ) );
+	}
 
 	/**
 	 * Fires immediately after a term-taxonomy relationship is updated.
 	 *
 	 * @since 2.9.0
 	 * @since 6.1.0 The `$args` parameter was added.
+	 * @since x.y.z This term-taxonomy relationship no longer exists as a separate database table.
 	 *
 	 * @param int    $tt_id    Term taxonomy ID.
 	 * @param string $taxonomy Taxonomy slug.
@@ -4185,6 +4224,7 @@ function _update_post_term_count( $terms, $taxonomy ) {
 
 		/** This action is documented in wp-includes/taxonomy.php */
 		do_action( 'edit_term_taxonomy', $term, $taxonomy->name );
+		// @TODO
 		$wpdb->update( $wpdb->term_taxonomy, compact( 'count' ), array( 'term_taxonomy_id' => $term ) );
 
 		/** This action is documented in wp-includes/taxonomy.php */
@@ -4628,6 +4668,19 @@ function wp_term_is_shared( $term_id ) {
 	$tt_count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->term_taxonomy WHERE term_id = %d", $term_id ) );
 
 	return $tt_count > 1;
+}
+
+/**
+ * Determines whether the term_taxonomy and terms tables are still separate.
+ *
+ * These tables were merged in x.y.z but can still be separate prior to completion of the database upgrade routine.
+ *
+ * @since x.y.z
+ *
+ * @return bool Whether the term_taxonomy table is still separate.
+ */
+function wp_has_separate_terms_tables(): bool {
+	return ! get_option( 'finished_combining_terms_tables' );
 }
 
 /**
